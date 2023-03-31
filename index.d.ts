@@ -9,7 +9,7 @@
 type integer = number;
 type Handle = integer; // TODO: Temp type. Replace to the Entity, when methods are updated
 type Hash = integer; // TODO: Temp type. Replace to HashOrString, when methods are updated
-type HashOrString = Hash;
+type HashOrString = Hash | string; //#custom
 type RGB = [ number, number, number ];
 type RGBA = [ number, number, number, number ];
 type Array3d = [ number, number, number ];
@@ -47,6 +47,7 @@ interface Mp {
 	Vector3: Vector3Mp;
 	vehicles: VehicleMpPool;
 	voiceChat: VoiceChatMp;
+    attachmentMngr: AttachmentMngr;//#custom
 
 	Blip: typeof BlipMp;
 	Browser: typeof BrowserMp;
@@ -144,6 +145,7 @@ declare abstract class BlipMp {
 }
 
 interface EntityMp {
+    __attachmentObjects: Record<number, ObjectMp> //#custom
 	alpha: number;
 	dimension: number;
 	model: number;
@@ -1027,7 +1029,9 @@ declare abstract class PickupMp implements EntityMp {
 
 }
 
-interface PlayerMp extends PedBaseMp {}
+interface PlayerMp extends PedBaseMp {
+    __attachments: number[] | undefined //#custom
+}
 declare abstract class PlayerMp implements PedBaseMp {
 	armour: number;
 	eyeColour: number;
@@ -2179,6 +2183,32 @@ interface VoiceChatMp {
 	cleanupAndReload(p0: boolean, p1: boolean, p2: boolean): void;
 }
 
+interface AttachmentMngr { //#custom
+    attachments: Record<
+        number, {
+        id: number;
+        model: HashOrString;
+        offset: Vector3Mp;
+        rotation: Vector3Mp;
+        boneName: string | number;
+    } | undefined
+    >;
+    addFor: (entity: PlayerMp, id: number) => void;
+    removeFor: (entity: EntityMp, id: number) => void;
+    initFor: (player: PlayerMp) => void;
+    shutdownFor: (entity: EntityMp) => void;
+    register: (
+            id: string | number,
+            model: HashOrString,
+            boneName: string | number,
+            offset: Vector3Mp,
+            rotation: Vector3Mp
+    ) => void;
+    unregister: (id: string | number) => void;
+    addLocal: (attachmentName: string | number) => void;
+    removeLocal: (attachmentName: string | number) => void;
+    getAttachments: () => void;
+}
 // -------------------------------------------------------------------------
 // Gui MP types
 // -------------------------------------------------------------------------
